@@ -1,7 +1,9 @@
 from pymongo import MongoClient
+import os
+from dotenv import load_dotenv
 
 #connetcting to MongoDB
-db_client = MongoClient("mongodb://localhost:27017/")
+db_client = MongoClient(os.getenv("MONGO_URI"))
 db = db_client["jailbreak_db"]
 collection = db["jailbreak_attempts"]
 

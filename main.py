@@ -5,7 +5,12 @@ from datetime import datetime
 import logging
 import uvicorn
 from llm_guard.input_scanners import PromptInjection
+import os
+from pymongo import MongoClient
+from dotenv import load_dotenv
 
+load_dotenv()
+print("MONGO_URI:", os.getenv("MONGO_URI"))
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -14,7 +19,7 @@ app = FastAPI()
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 # Connect to MongoDB
-db_client = MongoClient("mongodb://localhost:27017/")
+db_client = MongoClient(os.getenv("MONGO_URI"))
 db = db_client["jailbreak_db"]
 collection = db["jailbreak_attempts"]
 
