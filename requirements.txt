@@ -1,0 +1,4 @@
+fastapi
+uvicorn[standard]
+pymongo
+llm-guard[onnxruntime]==0.3.15
