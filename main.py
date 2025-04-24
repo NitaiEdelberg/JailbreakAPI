@@ -10,7 +10,6 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 
 load_dotenv()
-print("MONGO_URI:", os.getenv("MONGO_URI"))
 
 # Initialize FastAPI app
 app = FastAPI()
