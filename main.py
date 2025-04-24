@@ -1,9 +1,11 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-import logging
 from pymongo import MongoClient
-from llm_guard.input_scanners import PromptInjection
 from datetime import datetime
+import logging
+import uvicorn
+from llm_guard.input_scanners import PromptInjection
+
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -24,6 +26,9 @@ scanners = [PromptInjection()]
 class Message(BaseModel):
     text: str
 
+@app.get("/ping")
+def ping():
+    return {"message": "hey"}
 
 @app.post("/detect")
 def detect_jailbreak(message: Message):
@@ -36,17 +41,16 @@ def detect_jailbreak(message: Message):
         if not is_valid:
             flagged.append({
                 "scanner": scanner.__class__.__name__,
-                "risk_score": risk  # add whatever info you like
+                "risk_score": risk
             })
 
     # Save to DB
-    log_entry = {
-        "text": message.text,
-        "detected": bool(flagged),
-        "flagged_by": flagged,
-        "timestamp": datetime.utcnow()
-    }
-    # collection.insert_one(log_entry)
+    collection.insert_one({
+    "text": message.text,
+    "detected": bool(flagged),
+    "flagged_by": flagged,
+    "timestamp": datetime.utcnow()
+    })
 
     if flagged:
         logging.warning(f"Jailbreak detected: {message.text} | Details: {flagged}")
@@ -59,3 +63,7 @@ def detect_jailbreak(message: Message):
         )
 
     return {"message": "Safe input", "detected": False}
+
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="127.0.0.1", port=8005, reload=False)
