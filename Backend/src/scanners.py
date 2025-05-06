@@ -1,3 +1,10 @@
 from llm_guard.input_scanners import PromptInjection
+from our_scanner import CustomMLScanner
 
-scanners = [PromptInjection()]
+#PromptInjection() is removed for testing reasons
+
+scanners = [
+           CustomMLScanner()]
+
+
+          
