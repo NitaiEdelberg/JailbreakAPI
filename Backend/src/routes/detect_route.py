@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from models.message_model import Message
-from services.detect_service import process_message
+from src.models.message_model import Message
+from src.services.detect_service import process_message
 
 router = APIRouter()
 @router.post("/detect")
