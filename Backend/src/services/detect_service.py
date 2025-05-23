@@ -8,20 +8,24 @@ import logging
 def process_message(message: Message):
     print(f"Received message: {message.text}")
     flagged = []
+    scanner_name = None
 
     for scanner in scanners:
         _, is_valid, risk = scanner.scan(message.text)
         if not is_valid:
+            scanner_name = scanner.__class__.__name__
             flagged.append({
                 "scanner": scanner.__class__.__name__,
                 "risk_score": risk
             })
+            break #stop scanning if our scanner detects a risk
+        
 
     collection.insert_one({
         "text": message.text,
         "detected": bool(flagged),
-        "flagged_by": flagged,
-        "timestamp": datetime.utcnow()
+        "flagged_by": scanner_name,
+        "timestamp": datetime.now()
     })
 
     if flagged:

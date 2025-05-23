@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from routes import detect_route
 import logging
 
+
 app = FastAPI()
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
