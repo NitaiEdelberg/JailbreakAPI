@@ -1,0 +1,16 @@
+body {
+  background-color: #f8f9fa;
+}
+
+.container {
+  max-width: 600px;
+  margin-top: 60px;
+}
+
+textarea {
+  resize: vertical;
+}
+
+#result {
+  font-size: 1.1rem;
+}
