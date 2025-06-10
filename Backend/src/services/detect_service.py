@@ -1,8 +1,8 @@
 from fastapi import HTTPException
 from datetime import datetime
-from src.models.message_model import Message
-from src.db import collection
-from src.scanners import scanners
+from models.message_model import Message
+from db import collection
+from scanners import scanners
 import logging
 
 def process_message(message: Message):

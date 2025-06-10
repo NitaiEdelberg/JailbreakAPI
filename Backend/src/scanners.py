@@ -1,9 +1,10 @@
 from llm_guard.input_scanners import PromptInjection
-from src.our_scanner import CustomMLScanner
+from our_scanner import CustomMLScanner
+from regex_scanner import RegexScanner
 
-#PromptInjection() is removed for testing reasons
+# can add more scanners here
 
-scanners = [CustomMLScanner(), PromptInjection()]
+scanners = [RegexScanner(),CustomMLScanner(), PromptInjection()]
 
 
           
