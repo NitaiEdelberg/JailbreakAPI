@@ -1,4 +1,3 @@
-// function that Called when the "Check Prompt" button is clicked
 async function checkPrompt() {
   const promptText = document.getElementById("promptInput").value;
   const resultDiv = document.getElementById("result");

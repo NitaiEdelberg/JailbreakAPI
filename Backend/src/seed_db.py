@@ -11,10 +11,7 @@ db["jailbreak_attempts"].delete_many({})
 db["users"].delete_many({})
 db["companies"].delete_many({})
 
-
 collection = db["jailbreak_attempts"]
-
-
 
 #entering sample data to the database
 sample_data = [

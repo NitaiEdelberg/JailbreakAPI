@@ -1,4 +1,4 @@
-import pickle
+import pickle # convert python object hierarchy into a byte stream
 import os
 
 class CustomMLScanner:
@@ -9,8 +9,8 @@ class CustomMLScanner:
 
     def scan(self, text: str):
         vec = self.vectorizer.transform([text])
-        pred = int(self.model.predict(vec)[0])
-        prob = float(self.model.predict_proba(vec)[0][pred])
+        pred = int(self.model.predict(vec)[0]) #predict by 0 'valid' or 1 'invalid'
+        prob = float(self.model.predict_proba(vec)[0][pred]) # probability of the prediction being correct
         
         is_valid = not pred
         risk_score = round(prob, 2)

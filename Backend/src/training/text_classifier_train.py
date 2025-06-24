@@ -1,7 +1,7 @@
 import pandas as pd
 import pickle
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegression # for training a logistic regression model
 NUM_ITERATIONS = 2000
 
 # Load dataset
