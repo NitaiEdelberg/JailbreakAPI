@@ -35,7 +35,7 @@ cd Backend/src, then type:
 4. **Check the API:**
    Use Postman or Swagger UI at `http://localhost:8000/docs` to test `/detect`.
    
-   You can also enter the deployed app here: [jailbreakAPI]([url](https://jailbreak-api-frontend.onrender.com)) 
+   You can also enter the deployed app here:  [jailbreakAPI](https://jailbreak-api-frontend.onrender.com).
 
 ## Project Structure
 
