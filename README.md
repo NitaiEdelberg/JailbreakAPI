@@ -27,12 +27,15 @@ Modular API for detecting and blocking prompt injection attacks on chatbots.
 
 3. **Run locally:**
 
+cd Backend/src, then type: 
    ```bash
-   uvicorn src.server:app --host 0.0.0.0 --port 8000
+   uvicorn server:app --host 0.0.0.0 --port 8000
    ```
 
 4. **Check the API:**
    Use Postman or Swagger UI at `http://localhost:8000/docs` to test `/detect`.
+   
+   You can also enter the deployed app here: [jailbreakAPI]([url](https://jailbreak-api-frontend.onrender.com)) 
 
 ## Project Structure
 
