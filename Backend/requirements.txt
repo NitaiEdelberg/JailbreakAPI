@@ -2,5 +2,10 @@ fastapi
 uvicorn[standard]
 python-dotenv
 pymongo
-llm-guard[onnxruntime]==0.3.15
-scikit-learn
+# Pinned to the version our_scanner.pkl was trained with. A mismatch unpickles a
+# broken (unfitted) TfidfVectorizer and raises NotFittedError at request time.
+scikit-learn==1.6.1
+# llm-guard's PromptInjection loads a ~500MB transformer that OOMs Render's free
+# 512MB instance (and bloats the build). The app degrades gracefully without it,
+# running the regex + ML scanners. Re-enable on a larger instance:
+# llm-guard[onnxruntime]==0.3.15

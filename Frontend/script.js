@@ -5,9 +5,11 @@ async function checkPrompt() {
   // Reset the result area to default style and message
   resultDiv.className = "mt-4 fw-bold text-center";
   resultDiv.textContent = "Checking...";
-    //render still not avilable
+
+  // Deployed backend. For local dev, change to "http://127.0.0.1:8000".
+  const API_URL = "https://jailbreak-api-backend.onrender.com";
   try {
-    const response = await fetch("http://127.0.0.1:8000/detect", {
+    const response = await fetch(`${API_URL}/detect`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
