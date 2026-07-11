@@ -26,16 +26,18 @@ def process_message(message: Message):
             break #stop scanning if our scanner detects a risk
         
 
-    # Logging to MongoDB is best-effort: a DB outage/misconfig must not break detection.
-    try:
-        collection.insert_one({
-            "text": message.text,
-            "detected": bool(flagged),
-            "flagged_by": scanner_name,
-            "timestamp": datetime.now()
-        })
-    except Exception as e:
-        logging.warning(f"Could not log attempt to MongoDB: {e}")
+    # Logging to MongoDB is best-effort: no DB (collection is None) or a DB
+    # outage must not break detection.
+    if collection is not None:
+        try:
+            collection.insert_one({
+                "text": message.text,
+                "detected": bool(flagged),
+                "flagged_by": scanner_name,
+                "timestamp": datetime.now()
+            })
+        except Exception as e:
+            logging.warning(f"Could not log attempt to MongoDB: {e}")
 
     if flagged:
         logging.warning(f"Jailbreak detected: {message.text} | Details: {flagged}")
