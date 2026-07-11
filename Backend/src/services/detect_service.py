@@ -11,7 +11,12 @@ def process_message(message: Message):
     scanner_name = None
 
     for scanner in scanners:
-        _, is_valid, risk = scanner.scan(message.text)
+        # One misbehaving scanner shouldn't take down the whole request; log and skip it.
+        try:
+            _, is_valid, risk = scanner.scan(message.text)
+        except Exception as e:
+            logging.warning(f"{scanner.__class__.__name__} failed, skipping: {e}")
+            continue
         if not is_valid:
             scanner_name = scanner.__class__.__name__
             flagged.append({
@@ -21,12 +26,16 @@ def process_message(message: Message):
             break #stop scanning if our scanner detects a risk
         
 
-    collection.insert_one({
-        "text": message.text,
-        "detected": bool(flagged),
-        "flagged_by": scanner_name,
-        "timestamp": datetime.now()
-    })
+    # Logging to MongoDB is best-effort: a DB outage/misconfig must not break detection.
+    try:
+        collection.insert_one({
+            "text": message.text,
+            "detected": bool(flagged),
+            "flagged_by": scanner_name,
+            "timestamp": datetime.now()
+        })
+    except Exception as e:
+        logging.warning(f"Could not log attempt to MongoDB: {e}")
 
     if flagged:
         logging.warning(f"Jailbreak detected: {message.text} | Details: {flagged}")
