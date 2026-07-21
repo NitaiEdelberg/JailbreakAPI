@@ -1,16 +1,86 @@
 body {
-  background-color: #f8f9fa;
+  background-color: #f1f3f5;
 }
 
 .container {
-  max-width: 600px;
-  margin-top: 60px;
+  max-width: 640px;
+  margin-top: 48px;
+  margin-bottom: 48px;
 }
 
 textarea {
   resize: vertical;
 }
 
-#result {
-  font-size: 1.1rem;
+.result-area {
+  min-height: 1rem;
 }
+
+/* verdict header */
+.verdict {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.verdict-badge {
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  letter-spacing: 0.03em;
+}
+.verdict-badge.safe { background: #d1e7dd; color: #0f5132; }
+.verdict-badge.malicious { background: #f8d7da; color: #842029; }
+
+/* aggregate risk meter */
+.meter {
+  height: 10px;
+  border-radius: 999px;
+  background: #e9ecef;
+  overflow: hidden;
+  margin: 0.4rem 0 1rem;
+}
+.meter > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* per-scanner breakdown */
+.scanner-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #e9ecef;
+  border-radius: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+.scanner-row .name { font-weight: 600; }
+.scanner-row .matched {
+  display: block;
+  font-size: 0.82rem;
+  color: #6c757d;
+  margin-top: 0.15rem;
+}
+.scanner-row .matched code {
+  background: #fff3cd;
+  color: #664d03;
+  padding: 0.05rem 0.3rem;
+  border-radius: 0.25rem;
+}
+.pill {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.pill.flag { background: #f8d7da; color: #842029; }
+.pill.clear { background: #e2e3e5; color: #41464b; }
+
+.status-line { font-weight: 600; }

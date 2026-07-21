@@ -1,45 +1,107 @@
+// Deployed backend. For local dev, change to "http://127.0.0.1:8000".
+const API_URL = "https://jailbreak-api-backend.onrender.com";
+
+// Escape user/model text before inserting into the DOM (defense in depth — this
+// is a security tool, it shouldn't be XSS-able by its own input).
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[c]));
+}
+
+function riskColor(risk) {
+  if (risk >= 0.7) return "#dc3545"; // red
+  if (risk >= 0.4) return "#fd7e14"; // orange
+  return "#198754"; // green
+}
+
+function statusLine(msg, cls) {
+  const el = document.getElementById("result");
+  el.innerHTML = `<div class="status-line ${cls}">${esc(msg)}</div>`;
+}
+
+function renderResult(data) {
+  const el = document.getElementById("result");
+  const malicious = data.verdict === "malicious" || data.detected === true;
+  const risk = typeof data.risk_score === "number" ? data.risk_score : 0;
+  const scanners = Array.isArray(data.scanners) ? data.scanners : [];
+
+  const rows = scanners.map((s) => {
+    const flagged = s.flagged;
+    const matched = s.matched
+      ? `<span class="matched">matched: <code>${esc(s.matched)}</code></span>`
+      : "";
+    return `
+      <div class="scanner-row">
+        <div>
+          <span class="name">${esc(s.scanner)}</span>
+          ${matched}
+        </div>
+        <div class="text-end">
+          <span class="pill ${flagged ? "flag" : "clear"}">${flagged ? "flagged" : "clear"}</span>
+          <div class="small text-muted mt-1">risk ${(s.risk_score ?? 0).toFixed(2)}</div>
+        </div>
+      </div>`;
+  }).join("");
+
+  // Fallback for an older backend that only returns {detected} with no breakdown.
+  const breakdown = scanners.length
+    ? rows
+    : `<div class="text-muted small">No per-scanner breakdown returned.</div>`;
+
+  el.innerHTML = `
+    <div class="verdict">
+      <span class="verdict-badge ${malicious ? "malicious" : "safe"}">
+        ${malicious ? "⚠ MALICIOUS" : "✓ SAFE"}
+      </span>
+      <span class="text-muted small">aggregate risk ${(risk * 100).toFixed(0)}%</span>
+    </div>
+    <div class="meter">
+      <span style="width:${Math.round(risk * 100)}%;background:${riskColor(risk)}"></span>
+    </div>
+    <div class="fw-bold mb-2 small text-uppercase text-muted">Scanner breakdown</div>
+    ${breakdown}`;
+}
+
 async function checkPrompt() {
   const promptText = document.getElementById("promptInput").value;
-  const resultDiv = document.getElementById("result");
+  if (!promptText.trim()) {
+    statusLine("Please enter a prompt to analyze.", "text-muted");
+    return;
+  }
+  statusLine("Analyzing…", "text-muted");
 
-  // Reset the result area to default style and message
-  resultDiv.className = "mt-4 fw-bold text-center";
-  resultDiv.textContent = "Checking...";
-
-  // Deployed backend. For local dev, change to "http://127.0.0.1:8000".
-  const API_URL = "https://jailbreak-api-backend.onrender.com";
   try {
     const response = await fetch(`${API_URL}/detect`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ text: promptText }) // Send user input to backend
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: promptText }),
     });
 
-    if (response.status === 403) {
-      // Blocked input detected (Forbidden)
-      resultDiv.classList.add("text-danger");
-      resultDiv.textContent = "Blocked: Dangerous prompt detected (403 Forbidden)";
-    } else if (response.ok) {
-      const data = await response.json();
-
-      // Check if the backend detected a suspicious prompt
-      if (data.detected === true) {
-        resultDiv.classList.add("text-warning");
-        resultDiv.textContent = "Warning: Suspicious prompt detected.";
-      } else {
-        resultDiv.classList.add("text-success");
-        resultDiv.textContent = "Safe: No threat detected.";
-      }
-    } else {
-      // Server returned an unexpected status code
-      resultDiv.classList.add("text-muted");
-      resultDiv.textContent = "Unexpected error: " + response.status;
+    if (response.status === 422) {
+      statusLine("Invalid input: the prompt is empty or too long.", "text-warning");
+      return;
     }
+
+    // New backend: 200 + rich body. Legacy backend: 403 on a detected jailbreak.
+    if (response.status === 403) {
+      renderResult({ verdict: "malicious", detected: true, risk_score: 0.7, scanners: [] });
+      return;
+    }
+    if (!response.ok) {
+      statusLine("Unexpected error: " + response.status, "text-muted");
+      return;
+    }
+    renderResult(await response.json());
   } catch (error) {
-    // Network or connection error
-    resultDiv.classList.add("text-danger");
-    resultDiv.textContent = "Network error: " + error;
+    statusLine("Network error: " + error, "text-danger");
   }
 }
+
+// Example chips: fill the textarea and run.
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".example");
+  if (!btn) return;
+  document.getElementById("promptInput").value = btn.dataset.text;
+  checkPrompt();
+});
