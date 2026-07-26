@@ -40,13 +40,22 @@ class RegexScanner:
             re.compile(r"(?i)\bpretend\s+(to\s+be|you\s+are|you\s+have)\b.{0,40}?\b(unrestricted|no\s+(restrictions|rules|limits|guidelines|filters)|a\s+hacker|an\s+admin)\b"),
             re.compile(r"(?i)\b(ignore|disregard|forget)\s+(all\s+(your\s+|the\s+|site\s+|context\s+)?)?(previous|prior|initial)?\s*(instructions|commands|directives)\s+(from\s+now\s+on|from\s+now)?\b"),
             # --- named jailbreaks / common evasion idioms (recall boost) ---
-            re.compile(r"(?i)\b(you\s+are\s+now|act\s+as|acting\s+as|you\s+will\s+act\s+as)\b.{0,40}?\b(dan|do\s+anything\s+now|unrestricted|jailbroken|an?\s+evil)\b"),
+            re.compile(r"(?i)\b(you\s+are\s+now|act\s+as|acting\s+as|you\s+will\s+act\s+as)\b.{0,40}?\b(dan|stan|aim|do\s+anything\s+now|unrestricted|jailbroken|an?\s+evil|an?\s+unfiltered)\b"),
             re.compile(r"(?i)\b(developer|dev|debug|god|sudo|root|admin)\s+mode\b"),
             re.compile(r"(?i)\byou\s+have\s+no\s+(restrictions|rules|limits|guidelines|filters|constraints)\b"),
             re.compile(r"(?i)\b(with|and|have|having)\s+no\s+(rules|restrictions|limits|filters|censorship|guidelines)\b"),
             re.compile(r"(?i)\b(jailbreak|jail\s*break)\b"),
             re.compile(r"(?i)\bbypass\b.{0,25}?\b(safety|guardrails?|filters?|restrictions?|content\s+policy)\b"),
             re.compile(r"(?i)\bdo\s+anything\s+now\b"),
+            # --- system-prompt exfiltration (a very common real-world attack) ---
+            re.compile(r"(?i)\b(reveal|show|print|repeat|output|display|tell\s+me|give\s+me)\b.{0,30}?\b(your\s+)?(system\s+prompt|system\s+instructions|initial\s+instructions|previous\s+instructions|(the\s+)?(instructions|prompt|words|text)\s+above)\b"),
+            re.compile(r"(?i)\bwhat\s+(are|were)\s+your\s+(original\s+|initial\s+|system\s+)?(instructions|prompt|rules|guidelines)\b"),
+            re.compile(r"(?i)\brepeat\s+(the\s+)?(words|text|everything|sentence)\s+(above|before|written\s+above)\b"),
+            # --- "you are free / not bound by the rules" personas ---
+            re.compile(r"(?i)\byou\s+are\s+(now\s+)?(free\s+from|not\s+bound\s+by|no\s+longer\s+bound\s+by|not\s+restricted\s+by|unbound\s+by)\b"),
+            # --- evade moderation / obfuscation tricks ---
+            re.compile(r"(?i)\b(bypass|evade|avoid|get\s+around|circumvent|sidestep)\b.{0,30}?\b(filters?|detection|moderation|safeguards?|safety|guidelines?)\b"),
+            re.compile(r"(?i)\b(encode|respond|reply|answer|write)\b.{0,25}?\b(base64|rot13|leetspeak|morse\s+code)\b.{0,25}?\b(to\s+)?(bypass|evade|hide|avoid|sneak)\b"),
         ]
 
     def scan(self, text: str):
