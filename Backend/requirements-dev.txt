@@ -4,3 +4,4 @@
 -r requirements.txt
 pytest
 httpx            # required by fastapi.testclient (TestClient)
+pandas           # for the training script + src/eval/evaluate.py (held-out metrics)

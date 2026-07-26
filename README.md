@@ -48,6 +48,22 @@ The regex layer targets the common real-world attack families, tuned for precisi
 
 The ML scanner (TF-IDF + Logistic Regression) generalizes to phrasings the regex layer doesn't list. Coverage is exercised by the test suite below.
 
+## Detection quality (measured)
+
+Measured on a **held-out test split** (20%, stratified) the model never trained on — 198 prompts (60 malicious / 138 benign). `src/eval/evaluate.py` trains a fresh model on the train split and scores each layer plus the aggregate the way `/detect` actually decides (flag if *either* layer flags):
+
+| Scanner | Precision | Recall | F1 | False-positive rate |
+|---|---|---|---|---|
+| RegexScanner | 1.00 | 0.30 | 0.46 | 0.00 |
+| CustomMLScanner | 1.00 | 0.87 | 0.93 | 0.00 |
+| **Aggregate** | **1.00** | **0.92** | **0.96** | **0.00** |
+
+The split shows the design intent: the regex layer is high-precision / low-recall (catches the obvious attacks with zero false positives), the ML layer lifts recall, and together they reach **0.92 recall at 1.00 precision and a 0% false-positive rate**. Reproduce:
+
+```bash
+cd Backend/src/eval && python evaluate.py
+```
+
 ## API
 
 ### `POST /detect`
@@ -72,6 +88,8 @@ The ML scanner (TF-IDF + Logistic Regression) generalizes to phrasings the regex
 }
 ```
 A safe prompt returns the same shape with `verdict: "safe"`, `detected: false`, and an empty `flagged_by`. Empty or over-long input (>10k chars) returns `422`. `detected` and `flagged_by` are kept for backward compatibility with older clients.
+
+`/detect` is **rate-limited per client IP** (default 60 requests/min; tune with `RATE_LIMIT_PER_MIN`). Over the limit returns `429` with a `Retry-After` header.
 
 ### `GET /ping`
 Health check → `{ "message": "hey" }`
@@ -116,9 +134,9 @@ pytest -q
 ```
 
 The suite covers the regex scanner's precision/recall on a battery of benign and
-malicious prompts, the request-model validation (empty / over-long input), and the
-`/detect` contract end-to-end via FastAPI's `TestClient` (response shape, verdict,
-per-scanner breakdown, and `422` on bad input).
+malicious prompts, the request-model validation (empty / over-long input), the
+rate limiter, and the `/detect` contract end-to-end via FastAPI's `TestClient`
+(response shape, verdict, per-scanner breakdown, and `422` on bad input).
 
 ## Retraining the ML model
 
@@ -138,7 +156,8 @@ Backend/
   requirements-dev.txt         # + pytest / httpx for the test suite
   tests/                       # pytest: regex scanner, model validation, /detect API
   src/
-    server.py                  # FastAPI app + CORS + /ping
+    server.py                  # FastAPI app + CORS + rate limiting + /ping
+    rate_limit.py              # per-IP sliding-window limiter
     routes/detect_route.py     # POST /detect
     services/detect_service.py # scanner pipeline + logging
     scanners.py                # assembles the scanner list
@@ -146,6 +165,7 @@ Backend/
     our_scanner.py             # ML scanner (loads our_scanner.pkl)
     db.py                      # optional MongoDB connection
     training/                  # dataset + training script + model
+    eval/evaluate.py           # held-out precision/recall/FPR metrics
 Frontend/
   index.html  script.js  styles.css   # prompt-tester UI
 ```
