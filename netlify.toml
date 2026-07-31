@@ -1,0 +1,10 @@
+# Netlify config — publishes the static frontend (index.html + script.js +
+# styles.css) to Netlify's CDN. There is no build step; it's plain HTML/JS/CSS.
+#
+# script.js already calls the API cross-origin at
+#   https://jailbreak-api-backend.onrender.com
+# and the backend sends `Access-Control-Allow-Origin: *`, so no proxy is needed.
+
+[build]
+  publish = "Frontend"
+  command = ""
