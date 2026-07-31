@@ -1,0 +1,32 @@
+name: Keep backend awake
+
+# Render's free tier sleeps a service after ~15 min of inactivity; the next
+# visitor then waits ~50s for a cold start. This cron pings /ping often enough
+# that the container never sleeps — so the first /detect call is instant.
+#
+# IMPORTANT — free instance-hour budget:
+#   Render's free tier includes a limited number of instance-hours per month
+#   (~750, account-wide across all your free services). Keeping a service awake
+#   24/7 uses ~730h alone, so this only pings during a daytime window
+#   (06:00–18:59 UTC ≈ 09:00–21:59 Israel, also covering US morning) to leave
+#   room for your other free services.
+#
+#   • 24/7:            cron: '*/10 * * * *'
+#   • Different hours: change the "6-18" range below.
+
+on:
+  schedule:
+    - cron: '*/10 6-18 * * *'   # every 10 min, 06:00–18:59 UTC
+  workflow_dispatch:            # manual "wake it now" run
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping the Render backend
+        run: |
+          code=$(curl -sS -m 60 -o /dev/null -w "%{http_code}" https://jailbreak-api-backend.onrender.com/ping || echo "000")
+          echo "Backend responded with HTTP $code"
+          if [ "$code" = "000" ]; then
+            echo "No response within 60s (cold start in progress or down)."
+          fi
