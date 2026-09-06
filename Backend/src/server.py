@@ -18,6 +18,11 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    # allow_headers governs the REQUEST; a browser hides every response header
+    # outside the CORS-safelisted six unless it is named here. Without this the
+    # frontend's `response.headers.get("Retry-After")` on a 429 was always null,
+    # so the page could not tell anyone how long to wait.
+    expose_headers=["Retry-After"],
 )
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
