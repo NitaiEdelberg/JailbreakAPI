@@ -5,3 +5,9 @@
 pytest
 httpx            # required by fastapi.testclient (TestClient)
 pandas           # for the training script + src/eval/evaluate.py (held-out metrics)
+pyarrow          # src/training/harvest_datasets.py reads the datasets' parquet export
+
+# The optional TransformerScanner (src/transformer_scanner.py) additionally needs
+# onnxruntime + tokenizers to run, and torch + transformers + optimum to train
+# (src/training/train_transformer.py). Both are left out on purpose: they are a
+# few hundred MB and the scanner is off unless ENABLE_TRANSFORMER_SCANNER=1.

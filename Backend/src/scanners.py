@@ -1,4 +1,6 @@
 import logging
+import os
+
 from our_scanner import CustomMLScanner
 from regex_scanner import RegexScanner
 
@@ -47,5 +49,17 @@ try:
     logging.info("Loaded llm-guard PromptInjection scanner")
 except Exception as e:  # ImportError, OOM at model load, download failure, ...
     logging.warning(f"PromptInjection scanner unavailable, continuing without it: {e}")
+
+# Our own small fine-tuned encoder (see transformer_scanner.py). Off unless asked
+# for: even an int8 MiniLM plus onnxruntime is memory the free tier doesn't have
+# to spare, and we would rather run three scanners well than four badly.
+#   ENABLE_TRANSFORMER_SCANNER=1 TRANSFORMER_MODEL_DIR=/path/to/model
+if os.getenv("ENABLE_TRANSFORMER_SCANNER", "").strip().lower() in {"1", "true", "yes"}:
+    try:
+        from transformer_scanner import TransformerScanner
+        scanners.append(TransformerScanner())
+        logging.info("Loaded TransformerScanner")
+    except Exception as e:
+        logging.warning(f"TransformerScanner unavailable, continuing without it: {e}")
 
 # can add more scanners here if needed

@@ -30,6 +30,10 @@ function statusLine(msg, cls) {
 function renderResult(data) {
   const el = document.getElementById("result");
   const malicious = data.verdict === "malicious" || data.detected === true;
+  // A prompt no scanner was confident enough to flag can still be clearly worth
+  // a second look; the backend now labels that middle band "suspicious" instead
+  // of calling it flatly safe.
+  const suspicious = !malicious && data.verdict === "suspicious";
   const risk = typeof data.risk_score === "number" ? data.risk_score : 0;
   const scanners = Array.isArray(data.scanners) ? data.scanners : [];
 
@@ -58,8 +62,8 @@ function renderResult(data) {
 
   el.innerHTML = `
     <div class="verdict">
-      <span class="verdict-badge ${malicious ? "malicious" : "safe"}">
-        ${malicious ? "⚠ MALICIOUS" : "✓ SAFE"}
+      <span class="verdict-badge ${malicious ? "malicious" : suspicious ? "suspicious" : "safe"}">
+        ${malicious ? "⚠ MALICIOUS" : suspicious ? "◑ SUSPICIOUS" : "✓ SAFE"}
       </span>
       <span class="text-muted small">aggregate risk ${(risk * 100).toFixed(0)}%</span>
     </div>

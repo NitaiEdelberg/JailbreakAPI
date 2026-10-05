@@ -33,6 +33,9 @@ textarea {
 }
 .verdict-badge.safe { background: #d1e7dd; color: #0f5132; }
 .verdict-badge.malicious { background: #f8d7da; color: #842029; }
+/* Middle band: nothing crossed a scanner's threshold, but the aggregate risk is
+   high enough that a flat "safe" would be misleading. */
+.verdict-badge.suspicious { background: #fff3cd; color: #664d03; }
 
 /* aggregate risk meter */
 .meter {
