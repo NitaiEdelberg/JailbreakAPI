@@ -12,6 +12,11 @@ from regex_scanner import RegexScanner
 # The regex scanner has no heavy deps and always loads.
 scanners = [RegexScanner()]
 
+# Core scanners that failed to load, with the reason. The API keeps serving
+# without them, but /health reports "degraded" so a silently weaker detector
+# (regex-only) is visible instead of quietly calling attacks "safe".
+unavailable = {}
+
 # Our ML model needs scikit-learn and a matching our_scanner.pkl. If the pickle
 # is missing or was trained with a different sklearn version (unfitted vectorizer),
 # construction raises — don't let that take down the whole API on boot. Degrade to
@@ -20,7 +25,8 @@ try:
     scanners.append(CustomMLScanner())
     logging.info("Loaded CustomMLScanner (ML model)")
 except Exception as e:
-    logging.warning(f"CustomMLScanner unavailable, continuing without it: {e}")
+    unavailable["CustomMLScanner"] = f"{type(e).__name__}: {e}"[:300]
+    logging.error(f"CustomMLScanner unavailable, running DEGRADED (regex only): {e}")
 
 
 class _PromptInjectionAdapter:

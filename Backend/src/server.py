@@ -52,3 +52,16 @@ app.include_router(detect_route.router)
 @app.get("/ping")
 def ping():
     return {"message": "hey"}
+
+
+@app.get("/health")
+def health():
+    """Which scanners are actually running. "degraded" means a core scanner
+    (the ML model) failed to load and /detect is regex-only, so obfuscated
+    attacks it would have caught can come back as safe."""
+    from scanners import scanners, unavailable
+    return {
+        "status": "degraded" if unavailable else "ok",
+        "scanners": [s.name for s in scanners],
+        "unavailable": unavailable,
+    }

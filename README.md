@@ -121,7 +121,11 @@ A safe prompt returns the same shape with `verdict: "safe"`, `detected: false`, 
 `/detect` is **rate-limited per client IP** (default 60 requests/min; tune with `RATE_LIMIT_PER_MIN`). Over the limit returns `429` with a `Retry-After` header.
 
 ### `GET /ping`
-Health check → `{ "message": "hey" }`
+Liveness check → `{ "message": "hey" }`. Cheap on purpose: the page and the keep-alive cron use it to wake the server.
+
+### `GET /health`
+Which scanners are actually running → `{ "status": "ok", "scanners": ["RegexScanner", "CustomMLScanner"], "unavailable": {} }`.
+If the ML model fails to load (for example a scikit-learn version mismatch), the API keeps serving with the regex layer only and this reports `"status": "degraded"` with the reason. For a security tool a quietly weaker detector is worse than a loud one.
 
 **Try it:**
 ```bash
@@ -192,7 +196,7 @@ Backend/
   requirements-dev.txt         # + pytest / httpx for the test suite
   tests/                       # pytest: regex scanner, model validation, /detect API
   src/
-    server.py                  # FastAPI app + CORS + rate limiting + /ping
+    server.py                  # FastAPI app + CORS + rate limiting + /ping + /health
     rate_limit.py              # per-IP sliding-window limiter
     routes/detect_route.py     # POST /detect
     services/detect_service.py # scanner pipeline + logging
