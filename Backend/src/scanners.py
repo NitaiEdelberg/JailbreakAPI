@@ -3,14 +3,17 @@ import os
 
 from our_scanner import CustomMLScanner
 from regex_scanner import RegexScanner
+from indirect_scanner import IndirectInjectionScanner
 
 # Every scanner exposes the same tiny contract:
 #   .name                       -> str
 #   .scan(text) -> {"flagged": bool, "risk": float 0..1, "matched": str | None}
 # so the service can run them all and aggregate uniformly.
 
-# The regex scanner has no heavy deps and always loads.
-scanners = [RegexScanner()]
+# The rule layers have no heavy deps and always load. The indirect-injection
+# scanner only adds content-specific rules for non-"user" sources (see
+# indirect_scanner.py), so plain prompts score exactly as before.
+scanners = [RegexScanner(), IndirectInjectionScanner()]
 
 # Core scanners that failed to load, with the reason. The API keeps serving
 # without them, but /health reports "degraded" so a silently weaker detector

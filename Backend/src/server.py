@@ -14,8 +14,11 @@ app = FastAPI()
 #cors middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For development only – allow all
-    allow_credentials=True,
+    # Public, unauthenticated API: any origin may call it. No cookies or auth
+    # headers are involved, so credentials stay off (a wildcard origin plus
+    # credentials would let any site make credentialed calls).
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
     # allow_headers governs the REQUEST; a browser hides every response header
@@ -30,13 +33,17 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 # Basic per-IP rate limiting on the (relatively expensive) /detect endpoint so a
 # single client can't hammer the scanners. Tune with RATE_LIMIT_PER_MIN.
 _limiter = RateLimiter(int(os.getenv("RATE_LIMIT_PER_MIN", "60")))
+# A batch holds up to 25 items, so it spends five units of the per-minute
+# budget rather than one; otherwise batching would be a 25x bypass.
+_COST = {"/detect": 1, "/detect/batch": 5}
 
 
 @app.middleware("http")
 async def rate_limit_middleware(request: Request, call_next):
-    if request.url.path == "/detect" and request.method == "POST":
+    cost = _COST.get(request.url.path) if request.method == "POST" else None
+    if cost:
         ip = request.client.host if request.client else "unknown"
-        if not _limiter.allow(ip):
+        if not _limiter.allow(ip, cost):
             return JSONResponse(
                 status_code=429,
                 content={"detail": "Rate limit exceeded. Please slow down and try again shortly."},

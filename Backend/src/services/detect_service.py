@@ -26,7 +26,10 @@ def process_message(message: Message):
         name = getattr(scanner, "name", scanner.__class__.__name__)
         # One misbehaving scanner shouldn't take down the whole request; log and skip it.
         try:
-            verdict = scanner.scan(message.text)
+            if getattr(scanner, "accepts_source", False):
+                verdict = scanner.scan(message.text, source=message.source)
+            else:
+                verdict = scanner.scan(message.text)
         except Exception as e:
             logging.warning(f"{name} failed, skipping: {e}")
             continue
@@ -35,6 +38,7 @@ def process_message(message: Message):
             "flagged": bool(verdict["flagged"]),
             "risk_score": round(float(verdict["risk"]), 2),
             "matched": verdict.get("matched"),
+            **({"signal": verdict["signal"]} if verdict.get("signal") else {}),
         })
 
     flagged_scanners = [r for r in results if r["flagged"]]
@@ -59,6 +63,7 @@ def process_message(message: Message):
         try:
             collection.insert_one({
                 "text": message.text,
+                "source": message.source,
                 "detected": detected,
                 "verdict": verdict,
                 "flagged_by": [r["scanner"] for r in flagged_scanners],
@@ -77,6 +82,7 @@ def process_message(message: Message):
         # legacy field (kept for old clients): true only when a scanner actually
         # flagged, so "suspicious" does not silently become a block.
         "detected": detected,
+        "source": message.source,
         "verdict": verdict,                   # "safe" | "suspicious" | "malicious"
         "risk_score": risk_score,
         "scanners": results,                  # every scanner's verdict + score

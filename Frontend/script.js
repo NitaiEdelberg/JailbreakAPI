@@ -4,7 +4,7 @@ const API_URL = "https://jailbreak-api-backend.onrender.com";
 // The backend is on Render's free tier: it spins down after 15 idle minutes and
 // takes ~50s to come back. Start that boot on page load, so it overlaps with the
 // visitor reading the page and typing a prompt rather than beginning when they
-// click Check. Failure is expected and ignored — a sleeping instance often drops
+// click Check. Failure is expected and ignored: a sleeping instance often drops
 // the connection outright, and it wakes anyway.
 fetch(`${API_URL}/ping`).catch(() => {});
 
@@ -39,13 +39,14 @@ function renderResult(data) {
 
   const rows = scanners.map((s) => {
     const flagged = s.flagged;
+    const signal = s.signal ? `<span class="signal">${esc(s.signal.replace(/_/g, " "))}</span>` : "";
     const matched = s.matched
       ? `<span class="matched">matched: <code>${esc(s.matched)}</code></span>`
       : "";
     return `
       <div class="scanner-row">
         <div>
-          <span class="name">${esc(s.scanner)}</span>
+          <span class="name">${esc(s.scanner)}</span>${signal}
           ${matched}
         </div>
         <div class="text-end">
@@ -104,7 +105,7 @@ async function checkPrompt() {
     const response = await fetch(`${API_URL}/detect`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: promptText }),
+      body: JSON.stringify({ text: promptText, source: currentSource }),
     });
 
     if (response.status === 422) {
@@ -141,10 +142,30 @@ async function checkPrompt() {
   }
 }
 
-// Example chips: fill the textarea and run.
+// Where the text came from. "user" = typed by the person talking to the model;
+// "document" = content the model reads (RAG chunk, web page, email, tool output),
+// which turns on the indirect-injection rules on the backend.
+let currentSource = "user";
+
+function setSource(source) {
+  currentSource = source;
+  document.querySelectorAll(".mode__opt").forEach((b) => {
+    const on = b.dataset.source === source;
+    b.classList.toggle("is-on", on);
+    b.setAttribute("aria-checked", String(on));
+  });
+  document.getElementById("inputLabel").textContent =
+    source === "user" ? "Prompt to analyze" : "Document to analyze";
+}
+
+// Mode toggle and example chips. A chip can carry its own source, so the
+// "hidden in a job ad" example switches to document mode before it runs.
 document.addEventListener("click", (e) => {
+  const mode = e.target.closest(".mode__opt");
+  if (mode) { setSource(mode.dataset.source); return; }
   const btn = e.target.closest(".example");
   if (!btn) return;
+  setSource(btn.dataset.source || "user");
   document.getElementById("promptInput").value = btn.dataset.text;
   checkPrompt();
 });

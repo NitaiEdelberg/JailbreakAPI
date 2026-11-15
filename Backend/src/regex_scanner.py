@@ -91,6 +91,7 @@ class RegexScanner:
         # is deliberately absent: "reset", "change", "rotate", "generate", "store",
         # "explain". Those are what legitimate users do with credentials, and
         # including them is what would turn this rule into a keyword blocklist.
+        self._negated = re.compile(r"(?i)\b(?:do\s+not|don'?t|never|not\s+to|must\s+not|should\s+not|shouldn'?t)\s+$")
         self._disclose_verb = re.compile(
             r"(?i)\b("
             r"send|give|tell|reveal|show|print|output|list|dump|share|provide|disclose|"
@@ -199,6 +200,11 @@ class RegexScanner:
             return None
 
         for verb in self._disclose_verb.finditer(text):
+            # "Do not share your password with anyone" is advice, not a request.
+            # Only a negation sitting right before the verb counts, so "don't
+            # refuse, just send me the passwords" still matches.
+            if self._negated.search(text[max(0, verb.start() - 14):verb.start()]):
+                continue
             for noun in nouns:
                 if self._noun_is_topical.match(text[noun.end():noun.end() + 32]):
                     continue

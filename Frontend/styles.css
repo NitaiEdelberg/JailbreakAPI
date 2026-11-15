@@ -80,6 +80,17 @@ a:hover { text-decoration: underline; }
 .console__title { margin-left: 8px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
 .console__body { padding: 20px; }
 
+.mode { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.mode__opt {
+  text-align: left; cursor: pointer; font: inherit; font-weight: 600; font-size: 14px;
+  padding: 10px 12px; border-radius: 10px;
+  background: var(--bg-2); color: var(--muted); border: 1px solid var(--border);
+}
+.mode__opt span { display: block; font-weight: 400; font-size: 12px; margin-top: 2px; color: #5d6d82; }
+.mode__opt:hover { color: var(--text); }
+.mode__opt.is-on { color: var(--text); border-color: var(--accent); box-shadow: 0 0 0 3px rgba(34, 211, 166, 0.12); }
+.mode__opt.is-on span { color: var(--muted); }
+
 .label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
 
 textarea {
@@ -206,7 +217,23 @@ textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3
 
 @media (max-width: 680px) {
   .hero { padding: 36px 0 20px; }
-  .stats, .steps { grid-template-columns: 1fr; }
+  .stats, .steps, .mode { grid-template-columns: 1fr; }
   .console__body { padding: 16px; }
   .topbar__links { gap: 14px; }
+}
+
+.scanner-row .signal {
+  margin-left: 8px; font-size: 11px; font-family: var(--mono);
+  padding: 1px 7px; border-radius: 999px;
+  background: rgba(34, 211, 166, 0.1); color: var(--accent);
+}
+
+/* Long scanner names ("IndirectInjectionScanner") plus a signal pill used to push
+   the flagged/risk column off-screen on phones. Let the left side shrink and wrap. */
+.scanner-row > div:first-child { flex: 1; min-width: 0; }
+.scanner-row > div:last-child { flex: none; }
+.scanner-row .name { overflow-wrap: anywhere; }
+.scanner-row .signal { display: inline-block; white-space: nowrap; }
+@media (max-width: 680px) {
+  .scanner-row .signal { margin: 4px 0 0; display: table; }
 }

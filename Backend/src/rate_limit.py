@@ -14,14 +14,16 @@ class RateLimiter:
         self.clock = clock
         self._hits = defaultdict(deque)
 
-    def allow(self, key):
+    def allow(self, key, cost=1):
+        """Admit a request worth `cost` events (a batch counts for more than one
+        prompt). All-or-nothing: a request that does not fit is rejected whole."""
         now = self.clock()
         dq = self._hits[key]
         while dq and now - dq[0] > self.window:
             dq.popleft()
-        if len(dq) >= self.max:
+        if len(dq) + cost > self.max:
             return False
-        dq.append(now)
+        dq.extend([now] * cost)
         return True
 
     def retry_after(self, key):
