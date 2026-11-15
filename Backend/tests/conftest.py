@@ -5,6 +5,10 @@ model loader at the real pickle regardless of the working directory.
 import os
 import sys
 
+# Never call a real LLM from the test suite, even if GROQ_API_KEY is exported in
+# the shell. Judge tests build their own LLMJudge with a stubbed transport.
+os.environ["JUDGE_ENABLED"] = "0"
+
 SRC = os.path.join(os.path.dirname(os.path.dirname(__file__)), "src")
 if SRC not in sys.path:
     sys.path.insert(0, SRC)

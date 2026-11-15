@@ -2,6 +2,8 @@ fastapi
 uvicorn[standard]
 python-dotenv
 pymongo
+# The optional LLM judge (llm_judge.py) calls Groq over plain HTTP.
+httpx
 # Pinned to the version our_scanner.pkl was trained with. A mismatch unpickles a
 # broken (unfitted) TfidfVectorizer and raises NotFittedError at request time.
 scikit-learn==1.6.1

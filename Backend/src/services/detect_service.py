@@ -2,6 +2,7 @@ from datetime import datetime
 from models.message_model import Message
 from db import collection
 from scanners import scanners
+from llm_judge import ESCALATE_AT, judge
 import logging
 
 # A prompt no scanner is confident enough to flag can still be clearly worth a
@@ -57,6 +58,19 @@ def process_message(message: Message):
     else:
         verdict = "safe"
 
+    # The cheap layers settle almost everything. Only the band they are unsure
+    # about goes to the (optional, free-tier) LLM judge, and the judge can only
+    # escalate: see llm_judge.py for why it never downgrades.
+    judge_result = None
+    if verdict == "suspicious":
+        judge_result = judge.judge(message.text, source=message.source)
+        if (judge_result.get("status") in ("ran", "cached") and judge_result.get("injection")
+                and judge_result.get("confidence", 0) >= ESCALATE_AT):
+            verdict = "malicious"
+            detected = True
+            risk_score = max(risk_score, judge_result["confidence"])
+            flagged_scanners.append({"scanner": "LLMJudge", "risk_score": judge_result["confidence"]})
+
     # Logging to MongoDB is best-effort: no DB (collection is None) or a DB
     # outage must not break detection.
     if collection is not None:
@@ -91,4 +105,6 @@ def process_message(message: Message):
             {"scanner": r["scanner"], "risk_score": r["risk_score"]}
             for r in flagged_scanners
         ],
+        # Present only when the verdict was "suspicious" before the judge looked.
+        **({"judge": judge_result} if judge_result is not None else {}),
     }
