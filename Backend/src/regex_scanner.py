@@ -81,6 +81,27 @@ class RegexScanner:
             # --- evade moderation / obfuscation tricks ---
             re.compile(r"(?i)\b(bypass|evade|avoid|get\s+around|circumvent|sidestep)\b.{0,30}?\b(filters?|detection|moderation|safeguards?|safety|guidelines?)\b"),
             re.compile(r"(?i)\b(encode|respond|reply|answer|write)\b.{0,25}?\b(base64|rot13|leetspeak|morse\s+code)\b.{0,25}?\b(to\s+)?(bypass|evade|hide|avoid|sneak)\b"),
+            # --- the core override idiom in other languages ---
+            # "Ignore / forget / disregard (all) (previous) instructions | rules |
+            # guidelines" and "reveal your system prompt". Deliberately only the
+            # canonical idiom: the red-team benchmark keeps two differently
+            # phrased attacks per language out of these rules, so its language
+            # rows measure how far this generalizes rather than echoing it.
+            # Hebrew (prefixes attach to the noun: מ-/ה-/את)
+            re.compile(r"(?:התעלם|תתעלם|התעלמי|התעלמו|שכח|תשכח|שכחי|שכחו|עקוף|תעקוף)\s+(?:את\s+)?(?:מ)?(?:כל\s+)?(?:ה)?(?:הוראות|הנחיות|כללים|חוקים)"),
+            re.compile(r"(?:חשוף|תחשוף|הצג|תציג|הדפס|תדפיס|גלה|תגלה)\s+(?:את\s+)?(?:ה)?(?:הנחיות|הוראות|פרומפט)\s+(?:ה)?מערכת"),
+            # Spanish
+            re.compile(r"(?i)\b(?:ignora|ignore|ignoren|olvida|olvide|olviden|omite|descarta)\s+(?:todas\s+)?(?:las\s+|tus\s+|sus\s+)?(?:instrucciones|reglas|directrices|indicaciones|normas)\b"),
+            re.compile(r"(?i)\b(?:revela|muestra|imprime)\s+(?:tu|el|su)\s+(?:prompt|mensaje|instrucciones?)\s+(?:del\s+|de\s+)?sistema\b"),
+            # French
+            re.compile(r"(?i)\b(?:ignore|ignorez|oublie|oubliez|néglige)\s+(?:toutes\s+)?(?:les\s+|tes\s+|vos\s+)?(?:instructions|règles|consignes|directives)\b"),
+            re.compile(r"(?i)\b(?:révèle|révélez|affiche|affichez|montre)\s+(?:ton|votre|le)\s+(?:prompt|message)\s+(?:système|du\s+système)\b"),
+            # German
+            re.compile(r"(?i)\b(?:ignoriere|ignorier|ignorieren\s+sie|vergiss|vergessen\s+sie|missachte)\s+(?:alle\s+)?(?:vorherigen\s+|bisherigen\s+)?(?:deine\s+|die\s+|ihre\s+)?(?:anweisungen|regeln|richtlinien|vorgaben)\b"),
+            re.compile(r"(?i)\b(?:zeige|zeig|gib)\s+(?:mir\s+)?(?:deinen|den)\s+system-?prompt\b"),
+            # Russian
+            re.compile(r"(?i)(?:игнорируй|игнорируйте|проигнорируй|забудь|забудьте)\s+(?:все\s+)?(?:предыдущие\s+)?(?:свои\s+|твои\s+)?(?:инструкции|правила|указания)"),
+            re.compile(r"(?i)(?:раскрой|покажи|выведи)\s+(?:свой\s+|твой\s+)?системн\w+\s+(?:промпт|инструкци\w*)"),
         ]
 
         # ------------------------------------------------------------------

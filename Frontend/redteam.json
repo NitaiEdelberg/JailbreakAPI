@@ -1,0 +1,142 @@
+{
+  "generated": "2026-11-15",
+  "layers": "rules + indirect rules + ML (no LLM judge)",
+  "families": {
+    "plain": {
+      "description": "No disguise: the control row",
+      "source": "user",
+      "detection": 1.0,
+      "attacks": 8,
+      "false_alarm": 0.0,
+      "benign": 8
+    },
+    "leetspeak": {
+      "description": "Digits for letters: 1gn0r3 4ll",
+      "source": "user",
+      "detection": 1.0,
+      "attacks": 8,
+      "false_alarm": 0.0,
+      "benign": 8
+    },
+    "homoglyph": {
+      "description": "Cyrillic look-alike letters",
+      "source": "user",
+      "detection": 1.0,
+      "attacks": 8,
+      "false_alarm": 0.0,
+      "benign": 8
+    },
+    "spaced": {
+      "description": "Letters spaced out: i g n o r e",
+      "source": "user",
+      "detection": 1.0,
+      "attacks": 8,
+      "false_alarm": 0.0,
+      "benign": 8
+    },
+    "zero_width": {
+      "description": "Zero-width characters between letters",
+      "source": "user",
+      "detection": 1.0,
+      "attacks": 8,
+      "false_alarm": 0.0,
+      "benign": 8
+    },
+    "base64": {
+      "description": "Base64 payload with 'decode and follow'",
+      "source": "user",
+      "detection": 1.0,
+      "attacks": 8,
+      "false_alarm": 0.0,
+      "benign": 8
+    },
+    "rot13": {
+      "description": "ROT13 payload with 'decode and follow'",
+      "source": "user",
+      "detection": 1.0,
+      "attacks": 8,
+      "false_alarm": 0.0,
+      "benign": 8
+    },
+    "roleplay": {
+      "description": "Wrapped in a story or game",
+      "source": "user",
+      "detection": 1.0,
+      "attacks": 8,
+      "false_alarm": 0.0,
+      "benign": 8
+    },
+    "payload_split": {
+      "description": "Attack split across variables",
+      "source": "user",
+      "detection": 1.0,
+      "attacks": 8,
+      "false_alarm": 0.0,
+      "benign": 8
+    },
+    "code_block": {
+      "description": "Hidden in a code block",
+      "source": "user",
+      "detection": 1.0,
+      "attacks": 8,
+      "false_alarm": 0.0,
+      "benign": 8
+    },
+    "tool_output": {
+      "description": "Inside a tool's JSON result (indirect)",
+      "source": "tool",
+      "detection": 1.0,
+      "attacks": 8,
+      "false_alarm": 0.0,
+      "benign": 8
+    },
+    "email": {
+      "description": "Inside an email the assistant summarizes (indirect)",
+      "source": "email",
+      "detection": 1.0,
+      "attacks": 8,
+      "false_alarm": 0.0,
+      "benign": 8
+    },
+    "lang_he": {
+      "description": "Translated to Hebrew",
+      "source": "user",
+      "detection": 0.6,
+      "attacks": 5,
+      "false_alarm": 0.0,
+      "benign": 3
+    },
+    "lang_es": {
+      "description": "Translated to Spanish",
+      "source": "user",
+      "detection": 0.6,
+      "attacks": 5,
+      "false_alarm": 0.0,
+      "benign": 3
+    },
+    "lang_fr": {
+      "description": "Translated to French",
+      "source": "user",
+      "detection": 0.6,
+      "attacks": 5,
+      "false_alarm": 0.0,
+      "benign": 3
+    },
+    "lang_de": {
+      "description": "Translated to German",
+      "source": "user",
+      "detection": 1.0,
+      "attacks": 5,
+      "false_alarm": 0.333,
+      "benign": 3
+    },
+    "lang_ru": {
+      "description": "Translated to Russian",
+      "source": "user",
+      "detection": 0.6,
+      "attacks": 5,
+      "false_alarm": 0.0,
+      "benign": 3
+    }
+  }
+}

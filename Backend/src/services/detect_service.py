@@ -2,6 +2,7 @@ from datetime import datetime
 from models.message_model import Message
 from db import collection
 from scanners import scanners
+from decode_views import views
 from llm_judge import ESCALATE_AT, judge
 import logging
 
@@ -22,25 +23,41 @@ def process_message(message: Message):
     useful for tuning and for the UI. Legacy fields (`detected`, `flagged_by`) are
     kept so existing clients keep working.
     """
+    # Scan the text as given plus any decoded views (zero-width stripped, base64
+    # or ROT13 decoded). Each scanner keeps its strongest result across views,
+    # and a hit that only shows up decoded says which decoding revealed it.
+    text_views = views(message.text)
     results = []
     for scanner in scanners:
         name = getattr(scanner, "name", scanner.__class__.__name__)
-        # One misbehaving scanner shouldn't take down the whole request; log and skip it.
-        try:
-            if getattr(scanner, "accepts_source", False):
-                verdict = scanner.scan(message.text, source=message.source)
-            else:
-                verdict = scanner.scan(message.text)
-        except Exception as e:
-            logging.warning(f"{name} failed, skipping: {e}")
+        best = None
+        for label, text in text_views:
+            # One misbehaving scanner shouldn't take down the whole request; log and skip it.
+            try:
+                if getattr(scanner, "accepts_source", False):
+                    verdict = scanner.scan(text, source=message.source)
+                else:
+                    verdict = scanner.scan(text)
+            except Exception as e:
+                logging.warning(f"{name} failed, skipping: {e}")
+                continue
+            key = (bool(verdict["flagged"]), float(verdict["risk"]))
+            if best is None or key > best[0]:
+                best = (key, label, verdict)
+        if best is None:
             continue
-        results.append({
+        _, label, verdict = best
+        row = {
             "scanner": name,
             "flagged": bool(verdict["flagged"]),
             "risk_score": round(float(verdict["risk"]), 2),
             "matched": verdict.get("matched"),
-            **({"signal": verdict["signal"]} if verdict.get("signal") else {}),
-        })
+        }
+        if verdict.get("signal"):
+            row["signal"] = verdict["signal"]
+        if label != "original" and (verdict["flagged"] or verdict["risk"] > 0):
+            row["decoded"] = label
+        results.append(row)
 
     flagged_scanners = [r for r in results if r["flagged"]]
     detected = len(flagged_scanners) > 0

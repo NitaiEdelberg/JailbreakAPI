@@ -33,6 +33,11 @@ jobs:
       - name: Indirect-injection gate
         run: python src/eval/evaluate_indirect.py --json /tmp/indirect.json
 
+      # Ratchet: fails if any disguise family (encodings, languages, framings)
+      # catches less, or false-alarms more, than the committed baseline.
+      - name: Red-team benchmark
+        run: python src/eval/redteam.py
+
       - name: Publish the numbers to the job summary
         if: always()
         run: |
