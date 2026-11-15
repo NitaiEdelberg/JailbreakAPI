@@ -47,3 +47,19 @@ jobs:
           print(f"- hard-negative false-positive rate: **{d['standalone']['false_positive_rate']}**")
           EOF
           fi
+
+  sdk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: Backend/requirements*.txt
+      # The SDK tests run against the real API in-process, so they need the
+      # backend's dependencies too, plus the frameworks the guards plug into.
+      - name: Install
+        run: pip install -r Backend/requirements.txt -r Backend/requirements-dev.txt -e "sdk[test]" "langchain-core>=1.2.22"
+      - name: SDK tests
+        run: python -m pytest -q sdk/tests

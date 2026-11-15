@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jailbreak-guard"
+version = "0.1.0"
+description = "Client and drop-in guards for JailbreakAPI: screen prompts, documents and tool output for prompt injection."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = []  # standard library only
+
+[project.optional-dependencies]
+fastapi = ["fastapi"]
+langchain = ["langchain-core>=1.2.22"]
+test = ["pytest", "fastapi", "httpx"]
+
+[tool.setuptools]
+packages = ["jailbreak_guard"]

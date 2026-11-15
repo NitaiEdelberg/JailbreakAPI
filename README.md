@@ -84,6 +84,26 @@ Send untrusted content with a `source` (`document`, `web`, `email`, `tool` or `r
 
 Honest caveat: the attack payloads are hand-written, so the 100% is recall on a known test set, not a guarantee against a motivated attacker. The clean-document and benign-prompt numbers are the ones that say this layer is safe to switch on.
 
+## Python SDK and drop-in guards
+
+`sdk/` is a small, dependency-free client with guards for FastAPI and LangChain, so an app can adopt this in two lines:
+
+```bash
+pip install "git+https://github.com/NitaiEdelberg/JailbreakAPI#subdirectory=sdk"
+```
+```python
+from jailbreak_guard import Guard, fastapi_guard
+
+guard = Guard()
+if guard.check(user_message).is_malicious: ...                 # a prompt
+kept, quarantined = guard.filter_documents(retrieved_chunks)   # RAG chunks, tool output
+
+@app.post("/chat", dependencies=[Depends(fastapi_guard(guard, field="message"))])
+def chat(body: ChatIn): ...                                    # blocked before the handler runs
+```
+
+It batches automatically, retries a `429` after its `Retry-After`, and makes the one decision every caller has to make explicit: `fail_open=False` (default) refuses when the guard is down, `True` lets traffic through marked `unavailable`. See [sdk/README.md](sdk/README.md).
+
 ## Optional LLM judge (free tier, off by default)
 
 The rules and the ML model are fast and free and settle almost every prompt. What they cannot do is read intent in a paraphrase that avoids every cue. An LLM can, so it sits at the end of a cascade:
@@ -283,6 +303,10 @@ Backend/
     eval/data/                 # attack payloads, hard negatives, 45 real job descriptions
 Frontend/
   index.html  script.js  styles.css   # prompt-tester UI
+sdk/
+  jailbreak_guard/client.py           # Guard: check, check_many, filter_documents
+  jailbreak_guard/integrations.py     # FastAPI dependency, LangChain guard + document filter
+  tests/                              # end-to-end against the real API, in-process
 ```
 
 ## Limitations & future work
